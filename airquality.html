@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Canberra air quality</title>
+<script>
+function getData(url) {
+var request = new XMLHttpRequest();
+
+request.open('GET', url, true);
+request.setRequestHeader('cache-control', 'no-cache, must-revalidate, post-check=0, pre-check=0');
+request.setRequestHeader('cache-control', 'max-age=0');
+request.setRequestHeader('expires', '0');
+request.setRequestHeader('expires', 'Tue, 01 Jan 1980 1:00:00 GMT');
+request.setRequestHeader('pragma', 'no-cache');request.onload = function() {
+  var data = JSON.parse(this.response);
+  body = document.getElementsByTagName('table')[0];
+  body.innerHTML = '';
+
+  if (request.status >= 200 && request.status < 400) {
+    for (i = 0; i < data.Timestamp.length; i++) {
+      standard = 25; // Max safe value
+      aqi = Math.round(data.PM25[i] / standard * 100);
+
+      if (aqi <= 33) {
+		colour = "blue";
+      } else if (aqi <= 66) {
+		colour = "green";
+      } else if (aqi <= 99) {
+		colour = "orange";
+      } else if (aqi <= 149) {
+		colour = "red";
+      } else if (aqi <= 200) {
+		colour = "purple";
+      } else {
+		colour = "maroon";
+      }
+      body.innerHTML = body.innerHTML + '<tr><td style="font: 12px sans-serif;">' + data.Timestamp[i] 
+        + '</td><td><div style="font: 10px sans-serif; background-color: ' + colour + '; text-align: right; padding: 3px; margin: 1px; color: white; width: ' 
+        + (Math.round(data.PM25[i]) + 30) + 'px;">' + aqi + '</div></td></tr>';
+    }
+  } else {
+    body.innerHTML = body.innerHTML + '<tr><td>Connection error. Please retry later.</td></tr>';
+  }
+}
+
+request.send();
+}
+</script>
+</head>
+<body onload="getData(document.forms[0].elements[0].value)">
+<form>
+<select onchange="getData(this.value)">
+  <option value="https://r.airrater.org/custom/q/q=?q=%7B%22Type%22:%22QueryDay%22,%22Lat%22:-35.418302,%22Lon%22:149.094018%7D" selected>Monash air quality</option>
+  <option value="https://r.airrater.org/custom/q/q=?q=%7B%22Type%22:%22QueryDay%22,%22Lat%22:-35.285307,%22Lon%22:149.131579%7D">Civic air quality</option>
+  <option value="https://r.airrater.org/custom/q/q=?q=%7B%22Type%22:%22QueryDay%22,%22Lat%22:-35.220606,%22Lon%22:149.043539%7D">Florey air quality</option>
+</select>
+</form>
+<table></table>
+</body>
+</html>
